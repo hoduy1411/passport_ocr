@@ -1,0 +1,25 @@
+DEVICE_TYPE: 'cpu'
+
+
+FIELD_PASSPORT_DETECTOR:
+  WEIGHT: models/field_passport/passport_v3.pt
+  IMGSZ: 640
+  CONF: 0.4
+  IOU: 0.45
+
+
+OCR_CARD:
+  BASE_CFG: cfg/ocr/base.yml
+
+  # MODEL_CFG: cfg/ocr/vgg-transformer.yml
+  # WEIGHT: models/ocr/transformerocr_v31_qeq.pth
+
+  MODEL_CFG: cfg/ocr/vgg-transformer.yml
+  WEIGHT: models/ocr/vgg_transformer.pth
+
+  # MODEL_CFG: cfg/ocr/vgg-seq2seq.yml
+  # WEIGHT: models/ocr/vgg_seq2seq.pth
+
+  BEAM_SEARCH: False
+  SIZE_TRANSFORM: [500, 300]
+  

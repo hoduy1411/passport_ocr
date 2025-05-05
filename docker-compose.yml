@@ -1,0 +1,13 @@
+version: '2.3'
+services:
+  passport_ocr:
+    container_name: passport_ocr
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: passport_ocr:latest
+    ports:
+      - 8989:8989
+    volumes:
+      - ./uploads:/code/uploads

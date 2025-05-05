@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Result</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&display=swap" rel="stylesheet">
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            background-color: #ffffff; /* Màu nền trắng */
+        }
+        .container {
+            margin-top: 50px;
+        }
+        .result-box {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .result-box h1 {
+            background-color: #ffffff;
+            padding: 10px;
+            border-radius: 8px;
+            margin: -20px -20px 20px;
+        }
+        .row {
+            display: flex;
+            align-items: stretch;
+        }
+        .image-container, .info-container {
+            padding: 10px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .image-container {
+            flex: 1;
+        }
+        .info-container {
+            flex: 2;
+        }
+        .img-preview {
+            max-width: 100%;
+            height: auto;
+        }
+        .json-container {
+            font-family: 'Roboto', sans-serif;
+            font-size: 18px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 10px;
+            border: 2px solid #dddddd;
+            margin: 0;
+            overflow-x: auto;
+        }
+        .execution-time {
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            color: #333;
+            margin-top: 10px;
+        }
+        .copyright {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            padding: 10px;
+            font-size: 12px;
+            color: #888;
+        }
+        /* CSS cho button */
+        .btn-choose {
+            display: inline-block; /* Đặt inline-block để hiển thị trên một dòng */
+            border: 2px dashed #007bff;
+            padding: 10px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            white-space: nowrap; /* Đảm bảo rằng văn bản không bị xuống dòng */
+        }
+        .btn-choose.dragover {
+            background-color: #00417a; /* Thay đổi màu khi kéo thả lên button */
+        }
+        /* CSS cho phần chứa button */
+        .btn-choose-container {
+            text-align: center; /* Căn giữa phần chứa button */
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="result-box">
+            <h1 class="text-center">Passport Reader Demo</h1>
+            <div class="row">
+                <div class="col-md-4 image-container">
+                    <h4 class="text-center">Uploaded Image</h4>
+                    <img src="{{ image_url }}" alt="Uploaded Image" class="img-preview">
+                </div>
+                <div class="col-md-8 info-container">
+                    <h4 class="text-center">Information Extraction</h4>
+                    <pre class="json-container">
+{{ result_info | safe }}
+                    </pre>
+                    <div class="execution-time">
+                        Execution Time (CPU): {{ execution_time }} seconds
+                    </div>
+                </div>
+            </div>
+
+            <!-- Button "Choose and Process Image" -->
+            <div class="btn-choose-container">
+                <div class="btn btn-primary btn-choose" id="drop-area" onclick="triggerFileInput()">Process another image</div>
+            </div>
+
+            <!-- Hidden file input to choose a new image -->
+            <form id="upload-form" action="/" method="post" enctype="multipart/form-data" style="display:none;">
+                <input type="file" name="file" id="file-input" onchange="submitForm()" />
+            </form>
+        </div>
+    </div>
+
+    <!-- Copyright -->
+    <div class="copyright">
+        © 2024 copyright by AI-ETC
+    </div>
+
+    <!-- JavaScript -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        // Function to trigger the hidden file input
+        function triggerFileInput() {
+            document.getElementById('file-input').click();
+        }
+
+        // Function to auto-submit the form after a file is chosen
+        function submitForm() {
+            document.getElementById('upload-form').submit();
+        }
+
+        // Add event listeners for drag and drop
+        let dropArea = document.getElementById('drop-area');
+
+        // Prevent default behaviors
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        // Highlight drop area when dragging files over it
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, () => {
+                dropArea.classList.add('dragover');
+            }, false);
+        });
+
+        // Remove highlight when leaving or dropping files
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, () => {
+                dropArea.classList.remove('dragover');
+            }, false);
+        });
+
+        // Handle dropped files
+        dropArea.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            let dt = e.dataTransfer;
+            let files = dt.files;
+
+            // Process only the first file
+            if (files.length > 0) {
+                let fileInput = document.getElementById('file-input');
+                fileInput.files = files; // Assign dropped files to the input element
+                submitForm(); // Automatically submit the form
+            }
+        }
+    </script>
+</body>
+</html>
